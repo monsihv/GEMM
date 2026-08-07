@@ -13,6 +13,7 @@
 
 #include "arena.c"
 
+// Stick with classic matrices for this project
 typedef struct {
     float *data;
     u32 rows, cols;
