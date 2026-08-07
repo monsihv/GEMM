@@ -10,8 +10,10 @@
 
 #include "../headers/base.h"
 #include "../headers/arena.h"
+#include "../headers/helpers.h"
 
 #include "arena.c"
+#include "helpers.c"
 
 // Stick with classic matrices for this project
 typedef struct {
@@ -123,10 +125,7 @@ int main() {
         cache[i] = (elements * fmaCount * opPerFma) / (timeElapsed * 1000000000); 
     }
 
-    printf("N, naive, cache\n");
-    for (u32 i = 0; i < length; ++i) {
-        printf("%d, %f, %f\n", size[i], naive[i], cache[i]);
-    }
+    printToCSV("results.csv", length, size, naive, cache, NULL, NULL);
 
     return 0;
 }
