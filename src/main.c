@@ -8,8 +8,8 @@
 //This project will be done in C, tho if I ever were to rewrite my work in C++, the ideas should cleanly
 //transfer.
 
-#include "base.h"
-#include "arena.h"
+#include "../headers/base.h"
+#include "../headers/arena.h"
 
 #include "arena.c"
 

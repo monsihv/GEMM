@@ -1,4 +1,4 @@
-#include "arena.h"
+#include "../headers/arena.h"
 
 Arena *arenaAlloc(u64 capacity) {
     Arena *arena = malloc(capacity);

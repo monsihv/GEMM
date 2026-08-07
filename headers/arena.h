@@ -1,6 +1,6 @@
 // Arenas Memory Allocator
 // Inspired by Ryan Fleury's article "Untangling Lifetimes"
-// Relevant youtube videos also
+// Relevant youtube videos also (MagicalBat)
 
 #pragma once
 
