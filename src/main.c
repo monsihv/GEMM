@@ -42,6 +42,23 @@ void randomElements(Matrix *m) {
     }
 }
 
+bool checkMatricesEqual(const Matrix *m1, const Matrix *m2, u32 *failedIndex) {
+    if (m1->rows != m2->rows || m1->cols != m2->cols) {
+        fprintf(stderr, "Matrices incorrect dimensions for checking equality\n");
+        exit(1);
+    }
+
+    bool equal = true;
+    for (u32 i = 0; i < m1->rows * m2->cols; ++i) {
+        if (m1->data[i] != m2->data[i]) {
+            equal = false;
+            *failedIndex = i;
+        }
+    }
+
+    return equal;
+}
+
 Matrix *matMulNaive(Arena *a, Matrix *m1, Matrix *m2) {
     Matrix *output = matCreate(a, m1->rows, m2->cols);
 
@@ -70,13 +87,62 @@ Matrix *matMulCache(Arena *a, Matrix *m1, Matrix *m2) {
     return output;
 }
 
+Matrix *matMulBlocking(Arena *a, Matrix *m1, Matrix *m2) {
+    Matrix *output = matCreate(a, m1->rows, m2->cols);
+    u32 tileSize = 192;
+    u32 N = m1->rows;
+
+    if (tileSize > N) {
+        tileSize = N;
+    }
+
+    u32 iTile = tileSize;
+    u32 kTile = tileSize;
+    u32 jTile = tileSize;
+    for (u32 iOffset = 0; iOffset < m1->rows; iOffset += tileSize) {
+        for (u32 kOffset = 0; kOffset < m2->rows; kOffset += tileSize) {
+            for (u32 jOffset = 0; jOffset < m2->cols; jOffset += tileSize) {
+                iTile = tileSize;
+                if (tileSize > N - iOffset) {
+                    iTile = N - iOffset;
+                }
+                for (u32 i = iOffset; i < iOffset + iTile; ++i) {
+                    kTile = tileSize;
+                    if (tileSize > N - kOffset) {
+                        kTile = N - kOffset;
+                    }
+                    for (u32 k = kOffset; k < kOffset + kTile; ++k) {
+                        jTile = tileSize;
+                        if (tileSize > N - jOffset) {
+                            jTile = N - jOffset;
+                        }
+                        for (u32 j = jOffset; j < jOffset + jTile; ++j) {
+                            output->data[idx(output, i, j)] += 
+                            m1->data[idx(m1, i, k)] * m2->data[idx(m2, k, j)];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return output;
+}
+
 int main() {
     Arena *a = arenaAlloc(GIGABYTE(1));
 
-    u32 size[] = {64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024};
+    u32 size[] = {64, 128, 192, 256,
+                  320, 384, 448, 512,
+                  576, 640, 704, 768,
+                  832, 896, 960, 1024,
+                  2048};
+
     u32 length = sizeof(size) / sizeof(u32);
     Matrix *m[length];
     Matrix *m1[length];
+    Matrix **resultsCache = pushArray(a, Matrix*, length);
+    Matrix **resultsBlocking = pushArray(a, Matrix*, length);
 
     for (u32 i = 0; i < length; ++i) {
         m[i] = matCreate(a, size[i], size[i]);
@@ -87,10 +153,13 @@ int main() {
 
     double naive[length];
     double cache[length];
+    double blocking[length];
     double before, after, timeElapsed;
     struct timespec thingy;
-
     double opPerFma = 2.0;
+
+    u32 pos = a->pos;
+
     for (u32 i = 0; i < length; ++i) {
         clock_gettime(CLOCK_MONOTONIC, &thingy);
         before = (double)thingy.tv_nsec / 1000000000 + (double)thingy.tv_sec;
@@ -108,11 +177,13 @@ int main() {
         naive[i] = (elements * fmaCount * opPerFma) / (timeElapsed * 1000000000); 
     }
 
+    arenaPopTo(a, pos);
+
     for (u32 i = 0; i < length; ++i) {
         clock_gettime(CLOCK_MONOTONIC, &thingy);
         before = (double)thingy.tv_nsec / 1000000000 + (double)thingy.tv_sec;
 
-        Matrix *result = matMulCache(a, m[i], m1[i]);
+        resultsCache[i] = matMulCache(a, m[i], m1[i]);
 
         clock_gettime(CLOCK_MONOTONIC, &thingy);
         after = (double)thingy.tv_nsec / 1000000000 + (double)thingy.tv_sec;
@@ -125,7 +196,43 @@ int main() {
         cache[i] = (elements * fmaCount * opPerFma) / (timeElapsed * 1000000000); 
     }
 
-    printToCSV("results.csv", length, size, naive, cache, NULL, NULL);
+    for (u32 i = 0; i < length; ++i) {
+        clock_gettime(CLOCK_MONOTONIC, &thingy);
+        before = (double)thingy.tv_nsec / 1000000000 + (double)thingy.tv_sec;
+
+        resultsBlocking[i] = matMulBlocking(a, m[i], m1[i]);
+
+        clock_gettime(CLOCK_MONOTONIC, &thingy);
+        after = (double)thingy.tv_nsec / 1000000000 + (double)thingy.tv_sec;
+
+        timeElapsed = after - before;
+
+        double elements = size[i] * size[i];
+        double fmaCount = size[i];
+
+        blocking[i] = (elements * fmaCount * opPerFma) / (timeElapsed * 1000000000); 
+    }
+
+    u32 trueCount = 0;
+    u32 failedIndex = 0;
+    for (u32 i = 0; i < length; ++i) {
+        if (checkMatricesEqual(resultsCache[i], resultsBlocking[i], &failedIndex)) {
+            ++trueCount;
+            printf("size: %d, %d\n", size[i], 1);
+        }
+        else {
+            printf("size: %d, %d\n", size[i], 0);
+        }
+    }
+
+    if (trueCount != length) {
+        fprintf(stderr, "Matrix dont match, trueCount: %d, length: %d\n", trueCount, length);
+    }
+
+    clearArena(a);
+    arenaFree(a);
+
+    printToCSV("results.csv", length, size, naive, cache, blocking, NULL);
 
     return 0;
 }
