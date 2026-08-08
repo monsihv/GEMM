@@ -9,8 +9,6 @@ void printToCSV(const char *fileName, u32 arrayLength, u32 *sizes,
         exit(1);
     }
 
-    fprintf(csv, "#MATRIX MULTIPLICATION PERFORMANCE OPTIMIZATION (GFLOPS)\n");
-    fprintf(csv, "\n");
     fprintf(csv, "N, Naive, Cache, Blocking, SIMD\n");
     for (u32 i = 0; i < arrayLength; ++i) {
         fprintf(csv, "%d, %f, %f, ", sizes[i], naive[i], cache[i]);
