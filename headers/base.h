@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include <arm_neon.h>
 
 typedef uint8_t u8;
 typedef uint32_t u32;

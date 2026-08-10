@@ -34,6 +34,7 @@ int main() {
     double *naive = pushArray(a, double, length);
     double *cache =  pushArray(a, double, length);
     double *blocking = pushArray(a, double, length);
+    double *SIMD = pushArray(a, double, length);
     struct timespec thingy;
 
     u32 pos = a->pos;
@@ -52,6 +53,12 @@ int main() {
         evaluate(a, size, i, &resultNaive, m1, m2, &matMulNaive, &thingy, naive);
         arenaPopTo(a, pos);
 
+        //blocking
+        printf("Starting Blocking\n");
+        Matrix *resultBlocking;
+        evaluate(a, size, i, &resultBlocking, m1, m2, &matMulBlocking, &thingy, blocking);
+        arenaPopTo(a, pos);
+
         //cache
         printf("Starting Cache\n");
         Matrix *resultCache;
@@ -61,16 +68,14 @@ int main() {
             arenaPopTo(a, pos);
         }
 
-        //blocking
-        printf("Starting Blocking\n");
-        Matrix *resultBlocking;
-        evaluate(a, size, i, &resultBlocking, m1, m2, &matMulBlocking, &thingy, blocking);
+        //SIMD
+        printf("Starting SIMD\n");
+        Matrix *resultSIMD;
+        evaluate(a, size, i, &resultSIMD, m1, m2, &matMulBlockingSIMD, &thingy, SIMD);
 
         if (!correctCheck) {
             arenaPopTo(a, pos);
         }
-
-        //SIMD
 
         //clear matrix A & B
         arenaPopTo(b, pos);
@@ -78,7 +83,7 @@ int main() {
         //matrix checks
         if (correctCheck) {
             u32 trueCount = 0;
-            if (checkMatricesEqual(resultCache, resultBlocking, &trueCount)) {
+            if (checkMatricesEqual(resultCache, resultSIMD, &trueCount)) {
                 printf("size: %d, %d\n", size[i], 1);
             }
             else {
@@ -86,20 +91,20 @@ int main() {
             }
 
             u32 lastIndex = size[i] * size[i] - 1;
-            printf("cache: %f, blocking: %f\n", resultCache->data[0], resultBlocking->data[0]);
-            printf("cache: %f, blocking: %f\n", resultCache->data[lastIndex], resultBlocking->data[lastIndex]);
+            printf("cache: %f, blocking: %f\n", resultCache->data[0], resultSIMD->data[0]);
+            printf("cache: %f, blocking: %f\n", resultCache->data[lastIndex], resultSIMD->data[lastIndex]);
         }
 
         //clear results
         arenaPopTo(a, pos);
     }
 
+    printToCSV("results.csv", length, size, naive, cache, blocking, SIMD);
+
     clearArena(a);
     clearArena(b);
     arenaFree(a);
     arenaFree(b);
-
-    printToCSV("results.csv", length, size, naive, cache, blocking, NULL);
 
     return 0;
 }
