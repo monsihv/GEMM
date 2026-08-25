@@ -258,18 +258,6 @@ void matMulVecHelper(Matrix *output, const Matrix *m1, const Matrix *m2,
             float constant1;
             float constant2;
             float constant3;
-            float constant4;
-            float constant5;
-            float constant6;
-            float constant7;
-            float constant8;
-            float constant9;
-            float constant10;
-            float constant11;
-            float constant12;
-            float constant13;
-            float constant14;
-            float constant15;
 
             float *c0 = &output->data[idx(output, i, j)];
             float *c1 = &output->data[idx(output, i + 1, j)];
