@@ -14,7 +14,6 @@ This README walks the ladder in the order I actually did it, including the two r
 where I was wrong about what was happening. I left those in on purpose. The wrong turns
 are the part I learned the most from.
 
----
 
 ## The machine
 
@@ -54,7 +53,6 @@ make debug    # -O0 -g -fsanitize=address
 
 Unity build. `src/main.c` includes the .c files directly.
 
----
 
 ## The ladder
 
@@ -209,7 +207,6 @@ flops, so 1.6. Four times worse, which is basically the performance gap I measur
 So: bigger tile for more intensity, stop right before you spill. 4x16 is where those
 two meet on this chip.
 
----
 
 ## Results
 
@@ -254,7 +251,6 @@ GFLOPS:
 
 111 GFLOPS out of ~128 theoretical is about 86%.
 
----
 
 ## Stuff I learned that wasn't the point
 
@@ -287,10 +283,10 @@ CSAPP ch5, Drepper's *What Every Programmer Should Know About Memory*, the
 how-to-optimize-gemm wiki, and a bunch of CppCon talks. All of it conceptual, since the
 literature is x86 oriented, so every actual number in here had to be re-derived for ARM.
 
----
 
 ## A note on this README
 
-The content here is mine. The reasoning, the wrong turns, the derivations, and the
+The content here is mine. The reasoning, the code, the wrong turns, the derivations, and the
 conclusions all came out of my own notes and my own work on this repo. I used an AI
-assistant to help structure my words and to format and draft the markdown.
+assistant to help structure my words and to format and draft the markdown. I also used it
+to help me with the makefile.
