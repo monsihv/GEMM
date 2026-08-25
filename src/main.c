@@ -78,7 +78,7 @@ int main() {
         }
 
         //clear matrix A & B
-        arenaPopTo(b, pos);
+        arenaPopTo(b, posB);
 
         //matrix checks
         if (correctCheck) {
