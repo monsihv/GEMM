@@ -141,22 +141,18 @@ The stuff that made this click, in the order it mattered:
 
 ### 5. Blocking comes back from the dead
 
-Now that I had a 4x4 tile in flight I was touching a lot of B at once, so I figured
-maybe tiling is useful again after all, keep that big block in L1. Tried it. Small
-improvement, nothing dramatic.
+Now that I had a 4x4 tile in flight I was touching a lot of B at once, 
+so I figured maybe tiling is useful again after all, keep that big block 
+in L1. Tried it. Small improvement, nothing dramatic.
 
-Then I ran the sweep past N=2048 and the register kernel fell off a cliff:
-25 → 18.6 → 8.3 → 4.5.
+Then I ran the sweep out to bigger N and the register kernel fell apart. Badly.
 
-The microkernel walks a 4 wide column strip of B across N distinct cache lines. Past a
-certain N that strip stops fitting in L1 and every single k iteration re-fetches it.
+The microkernel walks a 4 wide column strip of B across N distinct cache lines. 
+Past a certain N that strip stops fitting in L1 and every single k iteration re-fetches it. 
+So I needed cache blocking again, and this time for a reason I could actually name.
 
-So blocking was never wrong. It was conditional on the kernel. ikj had nothing to
-block. The register microkernel *manufactures* the exact working set that tiling exists
-to fix. Re-fusing them brought the top end back and took N=4096 from 4.5 to ~12.
-
-Found out afterwards this is also why every tutorial does register blocking before
-tiling. Nobody mentions that the order is load bearing.
+So blocking was never wrong. It was conditional on the kernel. ikj had nothing to block. 
+The register microkernel manufactures the exact working set that tiling exists to fix. 
 
 ### 6. Doing the vectorization myself (NEON)
 
