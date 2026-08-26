@@ -278,11 +278,3 @@ GFLOPS:
 CSAPP ch5, Drepper's *What Every Programmer Should Know About Memory*, the
 how-to-optimize-gemm wiki, and a bunch of CppCon talks. All of it conceptual, since the
 literature is x86 oriented, so every actual number in here had to be re-derived for ARM.
-
-
-## A note on this README
-
-The content here is mine. The reasoning, the code, the wrong turns, the derivations, and the
-conclusions all came out of my own notes and my own work on this repo. I used an AI
-assistant to help structure my words and to format and draft the markdown. I also used it
-to help me with the makefile.
