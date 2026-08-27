@@ -37,11 +37,6 @@ clock  x  FMA units  x  lanes per vector  x  flops per FMA
 ~4e9    x      4     x         4          x       2       =  ~128 GFLOPS
 ```
 
-An FMA counts as 2 flops because it's a multiply and an add fused together. The M3 Pro
-P core has 4 NEON pipes that can each issue one FMA per cycle. And a `float32x4_t` is 4
-floats, so every one of those FMAs is doing 4 lanes at once. Miss any of those factors
-and you get 32 or 64 and think you're way closer to the ceiling than you are.
-
 ~128 GFLOPS is the number everything below gets measured against.
 
 ## Building
